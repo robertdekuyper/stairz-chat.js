@@ -1,168 +1,83 @@
-/* === CONFIG === */
+/* ===============================
+   Stairz Chat Widget
+   Versie: 2025-10-06
+   =============================== */
+
 const WEBHOOK_URL = "https://n8n.srv880919.hstgr.cloud/webhook/a476be50-de85-41ed-8195-3da36aeb0a51/chat";
 
-/* === CHAT WIDGET BOUWEN === */
-(function createChatWidget() {
-  const widget = document.createElement("div");
-  widget.id = "stairz-widget";
-  widget.innerHTML = `
-    <style>
-      #chat-button {
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        background-color: #5a2ca0;
-        color: #fff;
-        border: none;
-        border-radius: 50%;
-        width: 60px;
-        height: 60px;
-        font-size: 28px;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        transition: all 0.3s ease;
-        z-index: 9999;
-      }
-      #chat-button:hover {
-        transform: scale(1.1);
-        background-color: #7036cc;
-      }
-      #chat-box {
-        position: fixed;
-        bottom: 100px;
-        right: 24px;
-        width: 320px;
-        height: 400px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 25px rgba(0,0,0,0.2);
-        display: none;
-        flex-direction: column;
-        overflow: hidden;
-        z-index: 9998;
-        animation: fadeIn 0.3s ease;
-      }
-      #chat-header {
-        background: #5a2ca0;
-        color: white;
-        padding: 12px;
-        font-weight: 600;
-        text-align: center;
-      }
-      #chat-messages {
-        flex: 1;
-        padding: 10px;
-        overflow-y: auto;
-        font-size: 14px;
-        color: #333;
-      }
-      #chat-messages .message {
-        margin: 8px 0;
-        line-height: 1.4;
-      }
-      .message.bot {
-        color: #333;
-        background: #f1f0ff;
-        padding: 6px 10px;
-        border-radius: 8px;
-        width: fit-content;
-        max-width: 80%;
-      }
-      .message.user {
-        background: #e2e2e2;
-        align-self: flex-end;
-        padding: 6px 10px;
-        border-radius: 8px;
-        width: fit-content;
-        max-width: 80%;
-      }
-      #chat-input-area {
-        display: flex;
-        padding: 8px;
-        border-top: 1px solid #ddd;
-        background: #fafafa;
-      }
-      #chat-input-area input {
-        flex: 1;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-      }
-      #chat-input-area button {
-        margin-left: 8px;
-        padding: 8px 12px;
-        background: #5a2ca0;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-      }
-      #chat-input-area button:hover {
-        background: #7036cc;
-      }
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-    </style>
+/* === Wacht tot de pagina geladen is === */
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🟣 Stairz Chat geladen...");
 
-    <button id="chat-button">💬</button>
-
-    <div id="chat-box">
-      <div id="chat-header">Stairz Traprenovatie</div>
-      <div id="chat-messages">
-        <div class="message bot">Hoi 👋, welkom bij Stairz! Waarmee kan ik je helpen vandaag?</div>
-      </div>
-      <div id="chat-input-area">
-        <input type="text" id="chat-input" placeholder="Typ je bericht..." />
-        <button id="send-btn">Verstuur</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(widget);
-
-  const chatBtn = document.getElementById("chat-button");
-  const chatBox = document.getElementById("chat-box");
+  const chatContainer = document.getElementById("chat-container");
+  const chatForm = document.getElementById("chat-form");
   const chatInput = document.getElementById("chat-input");
-  const sendBtn = document.getElementById("send-btn");
-  const messages = document.getElementById("chat-messages");
 
-  // Toon/verberg chatvenster
-  chatBtn.addEventListener("click", () => {
-    chatBox.style.display = chatBox.style.display === "none" ? "flex" : "none";
-  });
+  if (!chatContainer || !chatForm || !chatInput) {
+    console.error("❌ Chat-elementen niet gevonden in HTML!");
+    return;
+  }
 
- /* === HELPER FUNCTIE OM BERICHTEN TOE TE VOEGEN === */
-function addMessage(message, sender = "bot") {
-  const msg = document.createElement("div");
-  msg.classList.add("message", sender);
+  /* === Markdown Parser toevoegen (voor vetgedrukte tekst en afbeeldingen) === */
+  const showdownScript = document.createElement("script");
+  showdownScript.src = "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js";
+  document.head.appendChild(showdownScript);
 
-  // Zet Markdown om naar HTML met Showdown
-  const converter = new showdown.Converter();
-  const html = converter.makeHtml(message);
+  let converter;
+  showdownScript.onload = () => {
+    converter = new showdown.Converter();
+    console.log("✅ Markdown parser geladen");
+  };
 
-  msg.innerHTML = html;
-  chatContainer.appendChild(msg);
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}
+  /* === Bericht toevoegen aan chat === */
+  function addMessage(message, sender = "bot") {
+    const msg = document.createElement("div");
+    msg.classList.add("message", sender);
 
+    // Markdown naar HTML converteren
+    const html = converter ? converter.makeHtml(message) : message;
 
-  // Verstuur bericht naar N8N
-  async function sendMessage() {
-    const userMsg = chatInput.value.trim();
-    if (!userMsg) return;
-    addMessage(userMsg, "user");
+    msg.innerHTML = html;
+    chatContainer.appendChild(msg);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  /* === Bericht naar N8N sturen === */
+  async function sendMessage(message) {
+    console.log("📤 Bericht verstuurd:", message);
+
+    // Gebruikersbericht tonen
+    addMessage(message, "user");
     chatInput.value = "";
 
     try {
-      const res = await fetch(WEBHOOK_URL, {
+      const response = await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chatInput: userMsg })
+        body: JSON.stringify({ chatInput: message })
       });
-      const data = await res.json();
+
+      console.log("🔹 HTTP status:", response.status);
+
+      if (!response.ok) {
+        addMessage("⚠️ Er ging iets mis bij het verbinden met de server.");
+        return;
+      }
+
+      const text = await response.text();
+      console.log("📩 Ruwe respons:", text);
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        addMessage("⚠️ Ongeldig antwoord ontvangen van de server.");
+        return;
+      }
+
+      // === Resultaat weergeven ===
       if (data.image) {
-        addMessage(`${data.text}<br><img src="${data.image}" style="max-width:100%;margin-top:6px;border-radius:8px;">`, "bot");
+        addMessage(`${data.text}\n\n![](${data.image})`, "bot");
       } else if (data.text) {
         addMessage(data.text, "bot");
       } else if (data.output) {
@@ -170,17 +85,17 @@ function addMessage(message, sender = "bot") {
       } else {
         addMessage("Ik kon even geen passend antwoord vinden 🤔", "bot");
       }
-    } catch (err) {
-      console.error(err);
-      addMessage("⚠️ Er ging iets mis bij het verbinden met de server.", "bot");
+
+    } catch (error) {
+      console.error("🚨 Fout bij verzenden:", error);
+      addMessage("⚠️ Kon geen verbinding maken met de server.", "bot");
     }
   }
 
-  sendBtn.addEventListener("click", sendMessage);
-  chatInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      sendMessage();
-    }
+  /* === Formulier-event koppelen === */
+  chatForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const message = chatInput.value.trim();
+    if (message) sendMessage(message);
   });
-})();
+});
