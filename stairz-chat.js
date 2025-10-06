@@ -1,6 +1,6 @@
 (() => {
   const config = {
-    webhook: "https://n8n.srv880919.hstgr.cloud/webhook/f406671e-c954-4691-b39a-66c90aa2f103/chat",
+    webhook: "https://n8n.srv880919.hstgr.cloud/webhook/a476be50-de85-41ed-8195-3da36aeb0a51/chat",
     position: "right", // "left" of "right"
     primaryColor: "#854fff",
     name: "Stairz Traprenovatie",
