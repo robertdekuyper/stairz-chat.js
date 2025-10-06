@@ -99,38 +99,29 @@
   }
 
   // === Bericht versturen ===
-  async function sendMessage() {
-    const text = input.value.trim();
-    if (!text) return;
+ async function sendMessage(message) {
+  const response = await fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chatInput: message })
+  });
 
-    appendMessage(text, "user");
-    input.value = "";
-
-    try {
-      const res = await fetch(config.webhook, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chatInput: text }),
-      });
-
-      if (!res.ok) {
-        appendMessage("⚠️ Er ging iets mis (status " + res.status + ")", "bot");
-        return;
-      }
-
-      const data = await res.json();
-      console.log("Webhook response:", data);
-
-      if (data.text || data.image) {
-        appendMessage(data.text || " ", "bot", data.image || null);
-      } else {
-        appendMessage("Ik kon even geen passend antwoord vinden 🤔", "bot");
-      }
-    } catch (err) {
-      console.error("Chat error:", err);
-      appendMessage("⚠️ Er ging iets mis bij het verbinden met de server.", "bot");
-    }
+  if (!response.ok) {
+    addMessage("⚠️ Er ging iets mis bij het verbinden met de server.");
+    return;
   }
+
+  const data = await response.json();
+
+  // ✅ Toon afbeelding als die er is
+  if (data.image) {
+    addMessage(`<strong>${data.text}</strong><br><img src="${data.image}" alt="decor voorbeeld" style="max-width: 100%; border-radius: 10px; margin-top: 8px;">`);
+  } else if (data.text) {
+    addMessage(data.text);
+  } else {
+    addMessage("Ik kon even geen passend antwoord vinden 🤔");
+  }
+}
 
   // === Event Listeners ===
   sendBtn.addEventListener("click", sendMessage);
