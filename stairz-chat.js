@@ -1,7 +1,7 @@
 <script>
 /* === CONFIG === */
-const WEBHOOK_URL = "https://n8n.srv880919.hstgr.cloud/webhook/a476be50-de85-41ed-8195-3da36aeb0a51/chat
-";
+const WEBHOOK_URL = "https://n8n.srv880919.hstgr.cloud/webhook/a476be50-de85-41ed-8195-3da36aeb0a51/chat";
+
 
 /* === ELEMENTEN OPHALEN === */
 const chatContainer = document.getElementById("chat-container");
