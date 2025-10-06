@@ -23,11 +23,24 @@ document.addEventListener("DOMContentLoaded", () => {
   showdownScript.src = "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js";
   document.head.appendChild(showdownScript);
 
-  let converter;
-  showdownScript.onload = () => {
-    converter = new showdown.Converter();
-    console.log("✅ Markdown parser geladen");
-  };
+  let converter = null;
+
+// Wacht tot showdown geladen is voordat we hem gebruiken
+showdownScript.onload = () => {
+  converter = new showdown.Converter();
+  console.log("✅ Markdown parser geladen en klaar voor gebruik");
+};
+
+// Helperfunctie om veilig markdown te converteren
+function toHTML(markdown) {
+  if (converter) {
+    return converter.makeHtml(markdown);
+  } else {
+    console.warn("⚠️ Markdown parser nog niet geladen, toon ruwe tekst");
+    return markdown;
+  }
+}
+
 
   /* === Bericht toevoegen aan chat === */
   function addMessage(message, sender = "bot") {
