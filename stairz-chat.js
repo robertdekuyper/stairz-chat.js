@@ -132,14 +132,20 @@ const WEBHOOK_URL = "https://n8n.srv880919.hstgr.cloud/webhook/a476be50-de85-41e
     chatBox.style.display = chatBox.style.display === "none" ? "flex" : "none";
   });
 
-  // Helper om bericht toe te voegen
-  function addMessage(text, sender = "bot") {
-    const msg = document.createElement("div");
-    msg.classList.add("message", sender);
-    msg.innerHTML = text;
-    messages.appendChild(msg);
-    messages.scrollTop = messages.scrollHeight;
-  }
+ /* === HELPER FUNCTIE OM BERICHTEN TOE TE VOEGEN === */
+function addMessage(message, sender = "bot") {
+  const msg = document.createElement("div");
+  msg.classList.add("message", sender);
+
+  // Zet Markdown om naar HTML met Showdown
+  const converter = new showdown.Converter();
+  const html = converter.makeHtml(message);
+
+  msg.innerHTML = html;
+  chatContainer.appendChild(msg);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
 
   // Verstuur bericht naar N8N
   async function sendMessage() {
