@@ -1,56 +1,52 @@
 /* ===============================
-   Stairz Chat Widget
+   Stairz Chat Widget – Auto Build
    Versie: 2025-10-06
    =============================== */
 
 const WEBHOOK_URL = "https://n8n.srv880919.hstgr.cloud/webhook/a476be50-de85-41ed-8195-3da36aeb0a51/chat";
 
-/* === Wacht tot de pagina geladen is === */
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🟣 Stairz Chat geladen...");
+
+  /* === Voeg chat HTML dynamisch toe === */
+  const chatWrapper = document.createElement("div");
+  chatWrapper.id = "stairz-widget";
+  chatWrapper.innerHTML = `
+    <div id="chat-container" class="chat-container"></div>
+    <form id="chat-form" class="chat-form">
+      <input id="chat-input" type="text" placeholder="Typ je bericht..." autocomplete="off"/>
+      <button type="submit">Verstuur</button>
+    </form>
+  `;
+  document.body.appendChild(chatWrapper);
 
   const chatContainer = document.getElementById("chat-container");
   const chatForm = document.getElementById("chat-form");
   const chatInput = document.getElementById("chat-input");
 
-  if (!chatContainer || !chatForm || !chatInput) {
-    console.error("❌ Chat-elementen niet gevonden in HTML!");
-    return;
-  }
-
-  /* === Markdown Parser toevoegen (voor vetgedrukte tekst en afbeeldingen) === */
+  /* === Markdown Parser laden === */
   const showdownScript = document.createElement("script");
   showdownScript.src = "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js";
   document.head.appendChild(showdownScript);
 
   let converter = null;
+  showdownScript.onload = () => {
+    converter = new showdown.Converter();
+    console.log("✅ Markdown parser geladen");
+  };
 
-// Wacht tot showdown geladen is voordat we hem gebruiken
-showdownScript.onload = () => {
-  converter = new showdown.Converter();
-  console.log("✅ Markdown parser geladen en klaar voor gebruik");
-};
-
-// Helperfunctie om veilig markdown te converteren
-function toHTML(markdown) {
-  if (converter) {
-    return converter.makeHtml(markdown);
-  } else {
-    console.warn("⚠️ Markdown parser nog niet geladen, toon ruwe tekst");
+  /* === Helper: veilige markdown-conversie === */
+  function toHTML(markdown) {
+    if (converter) return converter.makeHtml(markdown);
+    console.warn("⚠️ Markdown parser nog niet klaar");
     return markdown;
   }
-}
-
 
   /* === Bericht toevoegen aan chat === */
   function addMessage(message, sender = "bot") {
     const msg = document.createElement("div");
     msg.classList.add("message", sender);
-
-    // Markdown naar HTML converteren
-    const html = converter ? converter.makeHtml(message) : message;
-
-    msg.innerHTML = html;
+    msg.innerHTML = toHTML(message);
     chatContainer.appendChild(msg);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
@@ -58,8 +54,6 @@ function toHTML(markdown) {
   /* === Bericht naar N8N sturen === */
   async function sendMessage(message) {
     console.log("📤 Bericht verstuurd:", message);
-
-    // Gebruikersbericht tonen
     addMessage(message, "user");
     chatInput.value = "";
 
@@ -70,15 +64,13 @@ function toHTML(markdown) {
         body: JSON.stringify({ chatInput: message })
       });
 
-      console.log("🔹 HTTP status:", response.status);
-
       if (!response.ok) {
         addMessage("⚠️ Er ging iets mis bij het verbinden met de server.");
         return;
       }
 
       const text = await response.text();
-      console.log("📩 Ruwe respons:", text);
+      console.log("📩 Respons:", text);
 
       let data;
       try {
@@ -88,7 +80,6 @@ function toHTML(markdown) {
         return;
       }
 
-      // === Resultaat weergeven ===
       if (data.image) {
         addMessage(`${data.text}\n\n![](${data.image})`, "bot");
       } else if (data.text) {
@@ -98,14 +89,13 @@ function toHTML(markdown) {
       } else {
         addMessage("Ik kon even geen passend antwoord vinden 🤔", "bot");
       }
-
-    } catch (error) {
-      console.error("🚨 Fout bij verzenden:", error);
+    } catch (err) {
+      console.error("🚨 Fout bij verzenden:", err);
       addMessage("⚠️ Kon geen verbinding maken met de server.", "bot");
     }
   }
 
-  /* === Formulier-event koppelen === */
+  /* === Event listener === */
   chatForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const message = chatInput.value.trim();
