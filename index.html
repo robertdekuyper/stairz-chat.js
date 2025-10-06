@@ -4,14 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Stairz Chat Test</title>
+
+  <!-- Chat styling -->
   <link rel="stylesheet" href="https://robertdekuyper.github.io/stairz-chat.js/stairz-chat.css">
 </head>
+
 <body>
   <h1>Stairz Chat Widget Test</h1>
   <p>Als je dit ziet, werkt je script — klik op het paarse chatvenster rechtsonder om te testen.</p>
 
-  <script src="https://robertdekuyper.github.io/stairz-chat.js/stairz-chat.js"></script>
+  <!-- Container voor de chat -->
+  <div id="chat-container" class="chat-container"></div>
 
+  <!-- Chat invoerveld -->
+  <form id="chat-form" class="chat-form">
+    <input id="chat-input" type="text" placeholder="Typ je bericht..." />
+    <button type="submit">Verstuur</button>
+  </form>
+
+  <!-- Chat functionaliteit -->
+  <script src="https://robertdekuyper.github.io/stairz-chat.js/stairz-chat.js"></script>
 </body>
 </html>
+
 
