@@ -101,15 +101,15 @@
   // === Bericht versturen ===
  async function sendMessage(message) {
   const response = await fetch(WEBHOOK_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chatInput: message })
-  });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ chatInput: message })
+});
 
-  if (!response.ok) {
-    addMessage("⚠️ Er ging iets mis bij het verbinden met de server.");
-    return;
-  }
+if (!response.ok) {
+  addMessage("⚠️ Er ging iets mis bij het verbinden met de server.");
+  return;
+}
 
   const data = await response.json();
 
